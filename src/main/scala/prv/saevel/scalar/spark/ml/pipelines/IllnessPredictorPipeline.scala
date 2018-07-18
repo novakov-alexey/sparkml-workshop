@@ -13,7 +13,17 @@ object IllnessPredictorPipeline {
     * features(3) = otherIndicators + otherIndicators^2 + otherIndicators^3
     * features(4) = age + age^2 + age^3
     * and use a <code>DecisionTreeClassifier</code> to predict whether the patient is ill and puts them in the
-    * "illness_predicted" column.
+    * "illness_prediction" column.
     */
-  def apply(): Pipeline = ???
+  def apply(): Pipeline = {
+    new Pipeline().setStages(Array(
+      new StringIndexer().setInputCol("sex").setOutputCol("sex_indexed"),
+      new VectorAssembler().setInputCols(Array("age", "otherIndicators")).setOutputCol("mini_vector"),
+      new PolynomialExpansion().setInputCol("mini_vector").setOutputCol("poly_mini_vector").setDegree(3),
+      new VectorAssembler().setInputCols(Array("sex_indexed", "weigth", "height", "poly_mini_vector")).setOutputCol("features"),
+      new DecisionTreeClassifier().setLabelCol("illness_actual")
+        .setFeaturesCol("features")
+        .setPredictionCol("illness_prediction")
+    ))
+  }
 }

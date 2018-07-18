@@ -10,7 +10,7 @@ object IrisDataset {
   def apply(file: String)(implicit session: SparkSession): (DataFrame, DataFrame) = {
     import session.implicits._
 
-    val irisData = Source.fromFile(file)
+    val irisData: DataFrame = Source.fromFile(file)
       .getLines
       .map{ line =>
         val split = line.split(",")

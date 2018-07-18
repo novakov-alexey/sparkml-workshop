@@ -8,5 +8,8 @@ object Regression {
     * Applies <code>LinearRegression</code> based on the "features" column and the "mpg" label to <code>trainingData</code>
     * and then transforms <code>verificationData</code> adding predictions to the "mpg_predicted" column.
     */
-  def apply(trainingData: DataFrame, verificationData: DataFrame): DataFrame = ???
+  def apply(trainingData: DataFrame, verificationData: DataFrame): DataFrame = {
+    val regressor = new LinearRegression().setFeaturesCol("features").setLabelCol("mpg").setPredictionCol("mpg_predicted")
+    regressor.fit(trainingData).transform(verificationData)
+  }
 }

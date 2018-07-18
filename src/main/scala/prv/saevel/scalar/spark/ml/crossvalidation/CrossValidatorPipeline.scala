@@ -1,9 +1,9 @@
 package prv.saevel.scalar.spark.ml.crossvalidation
 
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.RandomForestClassifier
-import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.ml.feature.{StringIndexerModel, VectorAssembler}
+import org.apache.spark.ml.classification.{LogisticRegression, RandomForestClassifier}
+import org.apache.spark.ml.evaluation.{BinaryClassificationEvaluator, MulticlassClassificationEvaluator}
+import org.apache.spark.ml.feature.{HashingTF, StringIndexer, StringIndexerModel, VectorAssembler}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 
 object CrossValidatorPipeline {
@@ -22,5 +22,40 @@ object CrossValidatorPipeline {
     *   The <code>CrossValidator</code> trains / validates the "numTrees" values for the <code>RandomForestClassifier</code>
     *   from the values in <code>possibleNumTress</code>.
     */
-  def apply(possibleNumTrees: Array[Int]): CrossValidator = ???
+  def apply(possibleNumTrees: Array[Int]): CrossValidator = {
+    val classifier = new RandomForestClassifier()
+      .setFeaturesCol("features")
+      .setLabelCol("incomeBracket")
+      .setPredictionCol("predicted_income_bracket")
+
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setPredictionCol("predicted_income_bracket")
+      .setLabelCol("incomeBracket")
+      .setMetricName("accuracy")
+
+    val pipeline = new Pipeline().setStages(Array(
+      new StringIndexer()
+        .setInputCol("sex")
+        .setOutputCol("sex_indexed"),
+      new StringIndexer()
+        .setInputCol("educationLevel")
+        .setOutputCol("edu_level_indexed"),
+      new StringIndexer()
+        .setInputCol("fieldOfExpertise")
+        .setOutputCol("field_indexed"),
+      new VectorAssembler()
+        .setInputCols(Array("sex_indexed", "edu_level_indexed", "field_indexed", "age", "yearsOfExperience"))
+        .setOutputCol("features"),
+      classifier
+    ))
+
+    val paramGrid = new ParamGridBuilder()
+      .addGrid(classifier.numTrees, possibleNumTrees)
+      .build()
+
+    new CrossValidator()
+      .setEstimator(pipeline)
+      .setEstimatorParamMaps(paramGrid)
+      .setEvaluator(evaluator)
+  }
 }

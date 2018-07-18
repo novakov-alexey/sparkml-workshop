@@ -13,7 +13,7 @@ class CrossValidationTest extends WordSpec with PropertyChecks with Matchers {
 
   implicit val params: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 10)
 
-  implicit val session = SparkSession.builder.appName("CrossValidationTest").master("local[1]").getOrCreate
+  implicit val session = SparkSession.builder.appName("CrossValidationTest").master("local[*]").getOrCreate
 
   private val incomeData: Gen[List[IncomeData]] = Gen.choose(100, 150).flatMap(n => Gen.listOfN(n, for {
     age <- Gen.choose(20, 80)
@@ -52,7 +52,7 @@ class CrossValidationTest extends WordSpec with PropertyChecks with Matchers {
       if(results.count > 0) {
         val verification = results.select($"incomeBracket" === $"predicted_income_bracket").as[Boolean].collect()
 
-        val score = verification.count(x => x).toDouble / verification.size
+        val score = verification.count(x => x).toDouble / verification.length
 
         score should be > 0.5
       }

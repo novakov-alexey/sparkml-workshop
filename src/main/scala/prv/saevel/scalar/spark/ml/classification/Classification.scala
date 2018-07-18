@@ -9,5 +9,12 @@ object Classification {
     * in the "features" column and labels in the "type_numeric" column and then transforms <code>verificationData</code>
     * adding predicted classes as the "type_predicted" column.
     */
-  def apply(trainingData: DataFrame, verificationData: DataFrame): DataFrame = ???
+  def apply(trainingData: DataFrame, verificationData: DataFrame): DataFrame = {
+    new DecisionTreeClassifier()
+      .setFeaturesCol("features")
+      .setLabelCol("type_numeric")
+      .setPredictionCol("type_predicted")
+      .fit(trainingData)
+      .transform(verificationData)
+  }
 }
